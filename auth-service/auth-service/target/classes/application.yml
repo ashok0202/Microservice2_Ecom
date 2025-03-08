@@ -1,0 +1,23 @@
+server:
+  port: 9091
+
+spring:
+  application:
+    name: AUTH-SERVICE
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_users?createDatabaseIfNotExist=true&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  config:
+    import: optional:configserver:http://localhost:9296
+  instance:
+    prefer-ip-address: true
