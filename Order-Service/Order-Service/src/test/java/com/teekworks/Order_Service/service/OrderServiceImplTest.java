@@ -5,7 +5,9 @@ import com.teekworks.Order_Service.entity.Order;
 import com.teekworks.Order_Service.execption.CustomException;
 import com.teekworks.Order_Service.external.client.PaymentService;
 import com.teekworks.Order_Service.external.client.ProductService;
+import com.teekworks.Order_Service.external.request.PaymentRequest;
 import com.teekworks.Order_Service.external.response.PaymentResponse;
+import com.teekworks.Order_Service.model.OrderRequest;
 import com.teekworks.Order_Service.model.OrderResponse;
 import com.teekworks.Order_Service.model.PaymentMode;
 import com.teekworks.Order_Service.repository.OrderRepository;
@@ -14,18 +16,19 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
 import java.util.Optional;
 
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 
 @SpringBootTest
@@ -75,10 +78,10 @@ public class OrderServiceImplTest {
         OrderResponse result = orderService.getOrder(1);
 
         // Verification
-        verify(orderRepository, Mockito.times(1)).findById(anyLong());
-        verify(restTemplate, Mockito.times(1)).getForObject(
+        verify(orderRepository, times(1)).findById(anyLong());
+        verify(restTemplate, times(1)).getForObject(
                 "http://PRODUCT-SERVICE/product/getproduct/" + order.getProductId(), ProductResponse.class);
-        verify(restTemplate, Mockito.times(1)).getForObject(
+        verify(restTemplate, times(1)).getForObject(
                 "http://PAYMENT-SERVICE/payment/getPaymentStatus/" + order.getOrderId(), PaymentResponse.class);
 
         // Assertions
@@ -101,7 +104,72 @@ public class OrderServiceImplTest {
         assertEquals(404, exception.getStatus());
 
         // Assertions
-        verify(orderRepository, Mockito.times(1)).findById(anyLong());
+        verify(orderRepository, times(1)).findById(anyLong());
+    }
+
+    @DisplayName("Place Order - Success Scenario")
+    @Test
+    void test_When_Place_Order_Success() {
+        // Arrange
+        Order order = getMockOrder();
+        OrderRequest orderRequest = getMockOrderRequest();
+
+        when(orderRepository.save(any(Order.class)))
+                .thenReturn(order);
+        when(productService.reduceQuantity(anyLong(), anyLong()))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(paymentService.doPayment(any(PaymentRequest.class)))
+                .thenReturn(new ResponseEntity<>(1L, HttpStatus.OK));
+
+        // Act
+        long orderId = orderService.placeOrder(orderRequest);
+
+        // Assert
+        verify(orderRepository, times(2)).save(any());
+        verify(productService, times(1)).reduceQuantity(anyLong(), anyLong());
+        verify(paymentService, times(1)).doPayment(any(PaymentRequest.class));
+
+        assertEquals(order.getOrderId(), orderId);
+    }
+
+    @DisplayName("Place Order - Payment Failure Scenario")
+    @Test
+    void test_when_Place_Order_Fails_then_Exception_Thrown() {
+        // Arrange
+        Order order = getMockOrder();
+        OrderRequest orderRequest = getMockOrderRequest();
+
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
+        when(productService.reduceQuantity(anyLong(), anyLong()))
+                .thenReturn(new ResponseEntity<>(HttpStatus.OK));
+        when(paymentService.doPayment(any(PaymentRequest.class)))
+                .thenThrow(new RuntimeException("Payment Failed"));
+
+        // Act & Assert - Expect exception
+        CustomException exception = assertThrows(CustomException.class, () -> {
+            orderService.placeOrder(orderRequest);
+        });
+
+        // Assert exception message
+        assertEquals("Payment Failed", exception.getMessage());
+
+        // Verify interactions
+        verify(orderRepository, times(1)).save(any());
+        verify(productService, times(1)).reduceQuantity(anyLong(), anyLong());
+        verify(paymentService, times(1)).doPayment(any(PaymentRequest.class));
+    }
+
+
+
+
+    private OrderRequest getMockOrderRequest() {
+
+        OrderRequest orderRequest=new OrderRequest();
+        orderRequest.setProductId(1);
+        orderRequest.setQuantity(1);
+        orderRequest.setTotalAmount(100);
+        orderRequest.setPaymentMode(PaymentMode.CASH);
+        return orderRequest;
     }
 
     private PaymentResponse getMockPaymentResponse() {
