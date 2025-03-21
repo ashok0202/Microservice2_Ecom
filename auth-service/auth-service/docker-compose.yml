@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8
+    restart: always
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: authUsers
+    ports:
+      - "3306:3306"
+
+  auth-service:
+    image: auth-service
+    depends_on:
+      - mysql-db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/authUsers?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      CONFIG_SERVER_URL: http://host.docker.internal:9296
+      EUREKA_SERVER_ADDRESS: http://host.docker.internal:8761/eureka
+    ports:
+      - "9091:9091"
