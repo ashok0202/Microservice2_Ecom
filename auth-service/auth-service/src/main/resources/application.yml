@@ -1,20 +1,30 @@
 server:
-    port: 9091
+  port: 9091
 
 spring:
   application:
     name: auth-service
+
   config:
-    import: optional:configserver:http://localhost:9296
+    import: optional:configserver:http://${CONFIG_SERVER_URL:localhost}:9296
+
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/authUsers?createDatabaseIfNotExist=true
-    username: root
-    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver  # Changed to MySQL (replace as needed)
+    url: jdbc:mysql://${DB_HOST:localhost}:3306/${DB_NAME:authusers}  # Generic SQL URL
+    username: ${DB_USER:root}
+    password: ${DB_PASS:root}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      max-lifetime: 1800000
 
   jpa:
+    database: mysql  # Changed from PostgreSQL to generic SQL (adjust as needed)
+    database-platform: org.hibernate.dialect.MySQL8Dialect  # Adjust for other DBs
+    properties:
+      hibernate:
+        format_sql: true
     hibernate:
       ddl-auto: update
-      dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
-
