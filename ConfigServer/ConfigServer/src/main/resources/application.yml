@@ -9,9 +9,11 @@ spring:
       server:
         git:
           uri: https://github.com/ashok0202/spring-app-config
+          clone-on-start: true
+          default-label: main
 #          username: <>
 #          password: <>
-          clone-on-start: true
+
 
 eureka:
   instance:

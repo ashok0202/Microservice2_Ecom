@@ -4,27 +4,29 @@ server:
 spring:
   application:
     name: Product-Service
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/productservice
-    username: postgres
-    password: root
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
   config:
-    import: configserver:http://localhost:9296
-management:
-  tracing:
-    sampling:
-      probability: 1.0
-  zipkin:
-    tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:9296
+
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/productservice
+#    username: postgres
+#    password: root
+#    driver-class-name: org.postgresql.Driver
+#
+#  jpa:
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#  config:
+#    import: configserver:http://localhost:9296
+#management:
+#  tracing:
+#    sampling:
+#      probability: 1.0
+#  zipkin:
+#    tracing:
+#      endpoint: http://localhost:9411/api/v2/spans
 
 #eureka:
 #  instance:
