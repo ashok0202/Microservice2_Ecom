@@ -1,6 +1,7 @@
 package com.teekworks.Order_Service.external.client;
 
 
+import com.teekworks.Order_Service.config.interceptur.FeignclientInterceptor;
 import com.teekworks.Order_Service.execption.CustomException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @CircuitBreaker(name = "external" , fallbackMethod = "productServiceFallBack")
-@FeignClient(name = "PRODUCT-SERVICE/product" )
+@FeignClient(name = "PRODUCT-SERVICE/product",  configuration = FeignclientInterceptor.class )
 public interface ProductService {
 
     @PutMapping("/reduceQuantity/{productId}")

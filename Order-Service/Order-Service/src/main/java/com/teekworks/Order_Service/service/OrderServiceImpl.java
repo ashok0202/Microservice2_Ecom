@@ -98,8 +98,9 @@ public class OrderServiceImpl implements OrderService {
 
         logger.info("Fetching the Product with ProductId {}", order.getProductId());
 
-        ProductResponse productResponse = restTemplate.getForObject(
-                "http://PRODUCT-SERVICE/product/getproduct/" + order.getProductId(), ProductResponse.class);
+       ProductResponse productResponse =null;
+        //  restTemplate.getForObject(
+              //  "http://PRODUCT-SERVICE/product/getproduct/" + order.getProductId(), ProductResponse.class);
 
         logger.info("Getting payment Information from Payment Service");
 
