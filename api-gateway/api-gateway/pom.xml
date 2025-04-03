@@ -123,6 +123,12 @@
             <artifactId>spring-security-core</artifactId>
         </dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-redis-reactive -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-redis-reactive</artifactId>
+		</dependency>
+
 
     </dependencies>
 	<dependencyManagement>
